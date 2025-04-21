@@ -1,0 +1,154 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API for wallet operation",
+        "title": "Wallet API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/api/v1",
+    "paths": {
+        "/wallet": {
+            "post": {
+                "description": "Deposit funds to, or withdraw funds from, a wallet.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallet"
+                ],
+                "summary": "Perform a wallet operation",
+                "parameters": [
+                    {
+                        "description": "Operation parameters",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.WalletOperationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operation successful",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request / negative amount",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Wallet not found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/wallets/{WALLET_UUID}": {
+            "get": {
+                "description": "Return balance by UUID",
+                "tags": [
+                    "wallet"
+                ],
+                "summary": "Get Balance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID wallet",
+                        "name": "WALLET_UUID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.BalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.BalanceResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "uuid": {
+                    "type": "string",
+                    "example": "c3a8cb84-03f2-4fb9-982a-9ee2cfb50b9f"
+                }
+            }
+        },
+        "models.WalletOperationRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "description": "Amount is the amount of money to deposit or withdraw.\nMust be a positive integer.\nrequired: true\nexample: 500",
+                    "type": "integer",
+                    "example": 1000
+                },
+                "operationType": {
+                    "description": "OperationType defines the type of operation: \"deposit\" or \"withdrawal\".\nrequired: true\nexample: deposit",
+                    "type": "string",
+                    "example": "DEPOSIT"
+                },
+                "walletId": {
+                    "description": "WalletID is the unique identifier of the wallet.\nrequired: true\nexample: abc123",
+                    "type": "string",
+                    "example": "c3a8cb84-03f2-4fb9-982a-9ee2cfb50b9f"
+                }
+            }
+        },
+        "utils.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

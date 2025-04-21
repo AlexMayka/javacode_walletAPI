@@ -1,0 +1,113 @@
+basePath: /api/v1
+definitions:
+  models.BalanceResponse:
+    properties:
+      balance:
+        example: 1000
+        type: integer
+      uuid:
+        example: c3a8cb84-03f2-4fb9-982a-9ee2cfb50b9f
+        type: string
+    type: object
+  models.WalletOperationRequest:
+    properties:
+      amount:
+        description: |-
+          Amount is the amount of money to deposit or withdraw.
+          Must be a positive integer.
+          required: true
+          example: 500
+        example: 1000
+        type: integer
+      operationType:
+        description: |-
+          OperationType defines the type of operation: "deposit" or "withdrawal".
+          required: true
+          example: deposit
+        example: DEPOSIT
+        type: string
+      walletId:
+        description: |-
+          WalletID is the unique identifier of the wallet.
+          required: true
+          example: abc123
+        example: c3a8cb84-03f2-4fb9-982a-9ee2cfb50b9f
+        type: string
+    type: object
+  utils.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: API for wallet operation
+  title: Wallet API
+  version: "1.0"
+paths:
+  /wallet:
+    post:
+      consumes:
+      - application/json
+      description: Deposit funds to, or withdraw funds from, a wallet.
+      parameters:
+      - description: Operation parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.WalletOperationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Operation successful
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Invalid request / negative amount
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Wallet not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Perform a wallet operation
+      tags:
+      - wallet
+  /wallets/{WALLET_UUID}:
+    get:
+      description: Return balance by UUID
+      parameters:
+      - description: UUID wallet
+        in: path
+        name: WALLET_UUID
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.BalanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get Balance
+      tags:
+      - wallet
+swagger: "2.0"

@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - config.env
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${DB_USER} -d ${DB_NAME}'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      sh -c "
+      goose -dir /migrations ${DRIVER} \
+      \"postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable\" up
+      "
+    env_file:
+      - config.env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  api:
+    build: .
+    env_file:
+      - config.env
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    depends_on:
+      - migrator
+    networks:
+      - internal
+
+volumes:
+  db-data:
+
+networks:
+  internal:
+    driver: bridge
